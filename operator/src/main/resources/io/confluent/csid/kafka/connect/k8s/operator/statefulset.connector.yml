@@ -1,0 +1,10 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: template
+  namespace: template
+  labels:
+    io.confluent.csid.kafka.connect.connector: template
+spec:
+

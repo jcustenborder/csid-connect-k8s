@@ -4,6 +4,9 @@ kind: KafkaConnector
 metadata:
   name: test
   namespace: kafka-connect-poc
+  labels:
+    project: something
+    cost-center: boring
 spec:
   connectorImage: jcustenborder/connect-k8s-runner:1.0.3-SNAPSHOT
   taskImage: jcustenborder/connect-k8s-runner:1.0.3-SNAPSHOT
@@ -23,4 +26,4 @@ spec:
     value.converter: "org.apache.kafka.connect.json.JsonConverter"
     max.interval: "2"
     iterations: "100000000"
-    tasks.max: "2"
+    tasks.max: "1"

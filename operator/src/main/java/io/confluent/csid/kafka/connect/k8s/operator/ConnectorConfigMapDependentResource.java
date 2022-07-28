@@ -5,11 +5,17 @@ import io.confluent.csid.kafka.connect.k8s.common.K8sConfig;
 import io.confluent.csid.kafka.connect.k8s.common.SortedProperties;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodList;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
+import io.javaoperatorsdk.operator.processing.event.ResourceID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static io.confluent.csid.kafka.connect.k8s.common.Utils.ifNotEmpty;
 
@@ -21,6 +27,34 @@ public class ConnectorConfigMapDependentResource extends CRUDKubernetesDependent
     super(ConfigMap.class);
   }
 
+  @Override
+  protected void onUpdated(ResourceID primaryResourceId, ConfigMap updated, ConfigMap actual) {
+    super.onUpdated(primaryResourceId, updated, actual);
+
+    Map<String, String> labels = new LinkedHashMap<>();
+    labels.put("type", "connector");
+    labels.put("connector", primaryResourceId.getName());
+
+    if (primaryResourceId.getNamespace().isPresent()) {
+      PodList podList =
+          getKubernetesClient().pods().inNamespace(primaryResourceId.getNamespace().get())
+              .withLabels(labels)
+              .list();
+      for (Pod pod : podList.getItems()) {
+        log.info("onUpdated() - Restarting pod {}", pod.getMetadata().getName());
+        getKubernetesClient().pods().inNamespace(primaryResourceId.getNamespace().get()).delete(pod);
+      }
+    } else {
+      PodList podList =
+          getKubernetesClient().pods()
+              .withLabels(labels)
+              .list();
+      for (Pod pod : podList.getItems()) {
+        log.info("onUpdated() - Restarting pod {}", pod.getMetadata().getName());
+        getKubernetesClient().pods().delete(pod);
+      }
+    }
+  }
 
   @Override
   protected ConfigMap desired(KafkaConnector primary, Context<KafkaConnector> context) {

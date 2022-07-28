@@ -85,7 +85,7 @@ public class TaskStatefulSetDependentResource extends CRUDKubernetesDependentRes
                 .withServiceName(state.taskStatefulSet().getName())
                 .withSelector(
                     new LabelSelectorBuilder()
-                        .withMatchLabels(state.connectorMatchLabels())
+                        .withMatchLabels(state.taskLabels())
                         .build()
                 )
                 .withReplicas(taskConfigMap.getData().size())
@@ -93,7 +93,7 @@ public class TaskStatefulSetDependentResource extends CRUDKubernetesDependentRes
                     new PodTemplateSpecBuilder()
                         .withMetadata(
                             new ObjectMetaBuilder()
-                                .withLabels(state.labels())
+                                .withLabels(state.taskLabels())
                                 .build()
                         )
                         .withSpec(

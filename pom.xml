@@ -144,7 +144,6 @@
     </properties>
 
     <modules>
-        <module>connect-k8s</module>
         <module>model</module>
         <module>common</module>
         <module>operator</module>

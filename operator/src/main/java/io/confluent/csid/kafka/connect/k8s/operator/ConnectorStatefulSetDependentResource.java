@@ -68,7 +68,7 @@ public class ConnectorStatefulSetDependentResource extends CRUDKubernetesDepende
                 .withServiceName(state.connectorStatefulSet().getName())
                 .withSelector(
                     new LabelSelectorBuilder()
-                        .withMatchLabels(state.connectorMatchLabels())
+                        .withMatchLabels(state.connectorLabels())
                         .build()
                 )
                 .withReplicas(1)
@@ -76,7 +76,7 @@ public class ConnectorStatefulSetDependentResource extends CRUDKubernetesDepende
                     new PodTemplateSpecBuilder()
                         .withMetadata(
                             new ObjectMetaBuilder()
-                                .withLabels(state.labels())
+                                .withLabels(state.connectorLabels())
                                 .build()
                         )
                         .withSpec(

@@ -30,18 +30,28 @@ public interface KafkaConnectorState {
   }
 
   @Value.Derived
-  default Map<String, String> labels() {
+  default Map<String, String> connectorLabels() {
     Map<String, String> labels = new LinkedHashMap<>();
     labels.put("connector", name());
+    labels.put("type", "connector");
     return labels;
   }
 
   @Value.Derived
-  default Map<String, String> connectorMatchLabels() {
+  default Map<String, String> taskLabels() {
     Map<String, String> labels = new LinkedHashMap<>();
     labels.put("connector", name());
+    labels.put("type", "task");
     return labels;
   }
+
+
+//  @Value.Derived
+//  default Map<String, String> connectorMatchLabels() {
+//    Map<String, String> labels = new LinkedHashMap<>();
+//    labels.put("connector", name());
+//    return labels;
+//  }
 
   @Value.Derived
   default String connectorConfigMapName() {
@@ -52,7 +62,7 @@ public interface KafkaConnectorState {
   default ObjectMetaBuilder connectorConfigMap() {
     return new ObjectMetaBuilder()
         .withName(connectorConfigMapName())
-        .withLabels(labels())
+        .withLabels(connectorLabels())
         .withNamespace(namespace());
   }
 
@@ -115,7 +125,7 @@ public interface KafkaConnectorState {
   default ObjectMetaBuilder taskConfigMap() {
     return new ObjectMetaBuilder()
         .withName(taskConfigMapName())
-        .withLabels(labels())
+        .withLabels(taskLabels())
         .withNamespace(namespace());
   }
 
