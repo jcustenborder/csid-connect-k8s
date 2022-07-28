@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: connector-operator
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: connector-operator
+data:
+  logging.properties: |
+    log4j.appender.stdout.layout.ConversionPattern=[%d] %p %m (%c)%n
+    log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+    log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+    log4j.logger.io.confluent.csid.kafka.connect.k8s.common=TRACE
+    log4j.logger.org.reflections=ERROR
+    log4j.rootLogger=INFO, stdout
+
+#---
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: connector-operator
+#spec:
+#  selector:
+#    matchLabels:
+#      app: connector-operator
+#  replicas: 1
+#  template:
+#    metadata:
+#      labels:
+#        app: connector-operator
+#    spec:
+#      serviceAccountName: connector-operator
+#      volumes:
+#        - name: config
+#          configMap:
+#            name: connector-operator
+#      containers:
+#      - name: operator
+#        image: jcustenborder/connect-k8s-operator:1.0.3-SNAPSHOT
+#        imagePullPolicy: Always
+#        volumeMounts:
+#          - mountPath: /config/operator
+#            name: config
+#        ports:
+#        - containerPort: 80
+#        readinessProbe:
+#          httpGet:
+#            path: /health
+#            port: 8080
+#          initialDelaySeconds: 1
+#          timeoutSeconds: 1
+#        livenessProbe:
+#          httpGet:
+#            path: /health
+#            port: 8080
+#          initialDelaySeconds: 30
+#          timeoutSeconds: 1
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: operator-admin
+  namespace: kafka-connect-poc
+subjects:
+- kind: ServiceAccount
+  name: connector-operator
+  namespace: kafka-connect-poc
+roleRef:
+  kind: ClusterRole
+  name: connector-operator
+  apiGroup: ""
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: connector-operator
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - deployments
+  - services
+  - configmaps
+  - pods
+  verbs:
+  - '*'
+- apiGroups:
+  - "apps"
+  resources:
+  - services
+  - configmaps
+  - statefulsets
+  - secrets
+  verbs:
+  - '*'
+- apiGroups:
+  - "apiextensions.k8s.io"
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - '*'
+- apiGroups:
+  - "io.confluent.csid"
+  resources:
+  - kafkaconnectors
+  - kafkaconnectors/status
+  verbs:
+  - '*'
+- apiGroups:
+    - "networking.k8s.io"
+  resources:
+    - ingresses
+  verbs:
+    - '*'
+

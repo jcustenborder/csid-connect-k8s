@@ -1,0 +1,26 @@
+---
+apiVersion:  io.confluent.csid/v1
+kind: KafkaConnector
+metadata:
+  name: test
+  namespace: kafka-connect-poc
+spec:
+  connectorImage: jcustenborder/connect-k8s-runner:1.0.3-SNAPSHOT
+  taskImage: jcustenborder/connect-k8s-runner:1.0.3-SNAPSHOT
+  imagePullPolicy: Always
+  workerConfigSecret:
+    name: worker-config
+  downloadPlugins:
+    - "confluentinc/kafka-connect-datagen:0.5.3"
+  loggingConfig:
+    loggerLevels:
+      io.confluent.csid.kafka.connect.k8s.common: TRACE
+  connectorConfig:
+    connector.class: "io.confluent.kafka.connect.datagen.DatagenConnector"
+    kafka.topic: "users"
+    quickstart: "users"
+    key.converter: "org.apache.kafka.connect.storage.StringConverter"
+    value.converter: "org.apache.kafka.connect.json.JsonConverter"
+    max.interval: "2"
+    iterations: "100000000"
+    tasks.max: "2"

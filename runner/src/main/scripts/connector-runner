@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+export KAFKA_LOG4J_OPTS="-Dlog4j.configuration=file:///config/connector/logging.properties"
+export CLASSPATH='/usr/share/java/connect-k8s/classpath/*:/usr/share/java/connect-k8s/libs/*'
+
+kafka-run-class io.confluent.csid.kafka.connect.k8s.connector.ConnectorRunner "$@"

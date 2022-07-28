@@ -145,6 +145,10 @@
 
     <modules>
         <module>connect-k8s</module>
+        <module>model</module>
+        <module>common</module>
+        <module>operator</module>
+        <module>runner</module>
     </modules>
 
     <licenses>
@@ -178,17 +182,46 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!--
-            TODO: Move to the junit bom
-            -->
+            <dependency>
+                <groupId>io.javaoperatorsdk</groupId>
+                <artifactId>java-operator-sdk</artifactId>
+                <version>3.1.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.confluent.csid</groupId>
+                <artifactId>connect-k8s-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.confluent.csid</groupId>
+                <artifactId>connect-k8s-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>connect-runtime</artifactId>
+                <version>3.2.0</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-reload4j</artifactId>
+                    </exclusion>
+                </exclusions>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.sourceforge.argparse4j</groupId>
+                <artifactId>argparse4j</artifactId>
+                <version>0.7.0</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
+
     </dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>io.javaoperatorsdk</groupId>
-            <artifactId>operator-framework</artifactId>
-            <version>3.1.0</version>
-        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -211,12 +244,6 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.11</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.jcustenborder</groupId>
-            <artifactId>docker-compose-junit-extension</artifactId>
-            <version>0.1.6</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>

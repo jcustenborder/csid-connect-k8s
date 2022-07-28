@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-kafka-run-class io.confluent.csid.kafka.connect.k8s.task.TaskMain "$@"
