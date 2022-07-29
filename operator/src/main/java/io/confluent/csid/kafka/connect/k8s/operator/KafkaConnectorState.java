@@ -10,7 +10,6 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import org.immutables.value.Value;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Value.Immutable

@@ -41,6 +41,7 @@ class LabelMaker {
         LABEL_TYPE, VALUE_TASK
     );
   }
+
   public static Map<String, String> taskLabels(ResourceID resourceID) {
     return Map.of(
         LABEL_CONNECTOR, resourceID.getName(),
