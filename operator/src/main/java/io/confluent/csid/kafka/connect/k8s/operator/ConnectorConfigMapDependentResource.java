@@ -14,12 +14,13 @@ import io.javaoperatorsdk.operator.processing.event.ResourceID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static io.confluent.csid.kafka.connect.k8s.common.Utils.ifNotEmpty;
+import static io.confluent.csid.kafka.connect.k8s.operator.LabelMaker.connectorLabels;
+import static io.confluent.csid.kafka.connect.k8s.operator.LabelMaker.taskLabels;
 
-@KubernetesDependent
+@KubernetesDependent(labelSelector = LabelMaker.SELECTOR_CONNECTOR)
 public class ConnectorConfigMapDependentResource extends CRUDKubernetesDependentResource<ConfigMap, KafkaConnector> {
   private static final Logger log = LoggerFactory.getLogger(ConnectorConfigMapDependentResource.class);
 
@@ -31,17 +32,16 @@ public class ConnectorConfigMapDependentResource extends CRUDKubernetesDependent
   protected void onUpdated(ResourceID primaryResourceId, ConfigMap updated, ConfigMap actual) {
     super.onUpdated(primaryResourceId, updated, actual);
 
-    Map<String, String> labels = new LinkedHashMap<>();
-    labels.put("type", "connector");
-    labels.put("connector", primaryResourceId.getName());
+    Map<String, String> labels = connectorLabels(primaryResourceId);
 
+    log.debug("onUpdated({}) - Searching for pods with labels: {}", primaryResourceId, labels);
     if (primaryResourceId.getNamespace().isPresent()) {
       PodList podList =
           getKubernetesClient().pods().inNamespace(primaryResourceId.getNamespace().get())
               .withLabels(labels)
               .list();
       for (Pod pod : podList.getItems()) {
-        log.info("onUpdated() - Restarting pod {}", pod.getMetadata().getName());
+        log.info("onUpdated({}) - Restarting pod {}", primaryResourceId, pod.getMetadata().getName());
         getKubernetesClient().pods().inNamespace(primaryResourceId.getNamespace().get()).delete(pod);
       }
     } else {
@@ -50,7 +50,7 @@ public class ConnectorConfigMapDependentResource extends CRUDKubernetesDependent
               .withLabels(labels)
               .list();
       for (Pod pod : podList.getItems()) {
-        log.info("onUpdated() - Restarting pod {}", pod.getMetadata().getName());
+        log.info("onUpdated({}) - Restarting pod {}", primaryResourceId, pod.getMetadata().getName());
         getKubernetesClient().pods().delete(pod);
       }
     }
@@ -66,6 +66,8 @@ public class ConnectorConfigMapDependentResource extends CRUDKubernetesDependent
     k8sProperties.put(K8sConfig.CONNECTOR_NAME_CONF, state.name());
     k8sProperties.put(K8sConfig.CONNECTOR_NAMESPACE_CONF, state.namespace());
     ifNotEmpty(primary.getSpec().getDownloadPlugins(), p -> k8sProperties.put(K8sConfig.PLUGIN_DOWNLOAD_CONF, String.join(",", p)));
+
+    taskLabels(primary).forEach((key, value) -> k8sProperties.put("labels." + key, value));
 
     SortedProperties loggingProperties = new SortedProperties();
     loggingProperties.putAll(

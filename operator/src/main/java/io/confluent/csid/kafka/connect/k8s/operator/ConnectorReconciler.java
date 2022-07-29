@@ -3,25 +3,30 @@ package io.confluent.csid.kafka.connect.k8s.operator;
 import io.confluent.csid.kafka.connect.k8s.KafkaConnector;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
+import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @ControllerConfiguration(
     dependents = {
         @Dependent(type = ConnectorConfigMapDependentResource.class, name = "connector-configmap"),
-        @Dependent(type = ConnectorStatefulSetDependentResource.class, name = "connector-statefulset"),
-        @Dependent(type = TaskConfigMapDependentResource.class, name = "task-configmap"),
-        @Dependent(type = TaskStatefulSetDependentResource.class, name = "task-statefulset", dependsOn = {"connector-statefulset"})
+        @Dependent(type = ConnectorStatefulSetDependentResource.class, name = "connector-statefulset", dependsOn = {"connector-configmap"}),
+        @Dependent(type = TaskConfigMapDependentResource.class, name = "task-configmap", dependsOn = {"connector-statefulset"}),
+        @Dependent(type = TaskStatefulSetDependentResource.class, name = "task-statefulset", dependsOn = {"task-configmap"})
     }
 )
-public class ConnectorReconciler implements Reconciler<KafkaConnector> {
+public class ConnectorReconciler implements Reconciler<KafkaConnector>, Cleaner<KafkaConnector> {
   private static final Logger log = LoggerFactory.getLogger(ConnectorReconciler.class);
 
   @Override
@@ -32,5 +37,23 @@ public class ConnectorReconciler implements Reconciler<KafkaConnector> {
     Set<StatefulSet> statefulSets = context.getSecondaryResources(StatefulSet.class);
 
     return UpdateControl.noUpdate();
+  }
+
+
+  @Override
+  public DeleteControl cleanup(KafkaConnector connector, Context<KafkaConnector> context) {
+    Set<ConfigMap> configMaps = context.getSecondaryResources(ConfigMap.class);
+
+    List<ConfigMap> toRemove =
+        configMaps.stream()
+            .filter(c -> connector.getMetadata().getName().equals(c.getMetadata().getLabels().get(LabelMaker.LABEL_CONNECTOR)))
+            .filter(c -> LabelMaker.VALUE_TASK.equals(c.getMetadata().getLabels().get(LabelMaker.LABEL_TYPE)))
+            .collect(Collectors.toList());
+
+    if(!toRemove.isEmpty()) {
+
+    }
+
+    return DeleteControl.defaultDelete();
   }
 }

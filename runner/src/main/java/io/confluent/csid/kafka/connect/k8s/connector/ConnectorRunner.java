@@ -49,7 +49,7 @@ public class ConnectorRunner {
     final Worker worker = new Worker(k8sConfig.connectorName, Time.SYSTEM, plugins, config, offsetBackingStore, overridePolicy);
     worker.start();
     String kafkaClusterId = "";
-    ConnectorConfig connectorConfig = new ConnectorConfig(plugins, connectorSettings);
+
 
     final Herder herder = new StandaloneHerder(worker, kafkaClusterId, overridePolicy);
     herder.start();
@@ -60,6 +60,8 @@ public class ConnectorRunner {
       worker.stop();
       herder.stop();
     }));
+
+    ConnectorConfig connectorConfig = new ConnectorConfig(plugins, connectorSettings);
 
     DefaultKubernetesClient client = new DefaultKubernetesClient();
 

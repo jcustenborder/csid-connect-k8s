@@ -125,8 +125,7 @@ public class K8sConnectorContext implements CloseableConnectorContext, Connector
             new ObjectMetaBuilder()
                 .withNamespace(this.k8sConfig.connectorNamespace)
                 .withName(this.k8sConfig.connectorName + "-tasks")
-                .addToLabels("managedby", "connector")
-                .addToLabels("connector", this.k8sConfig.connectorName)
+                .withLabels(this.k8sConfig.labels())
                 .build()
         ).addToData(configFiles)
         .build();

@@ -11,14 +11,16 @@ import io.javaoperatorsdk.operator.processing.event.source.SecondaryToPrimaryMap
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-@KubernetesDependent(labelSelector = "managedby=connector")
+import static io.confluent.csid.kafka.connect.k8s.operator.LabelMaker.taskLabels;
+
+@KubernetesDependent(labelSelector = LabelMaker.SELECTOR_TASK)
 public class TaskConfigMapDependentResource extends KubernetesDependentResource<ConfigMap, KafkaConnector> implements SecondaryToPrimaryMapper<ConfigMap> {
   private static final Logger log = LoggerFactory.getLogger(TaskConfigMapDependentResource.class);
+
   public TaskConfigMapDependentResource() {
     super(ConfigMap.class);
   }
@@ -27,7 +29,7 @@ public class TaskConfigMapDependentResource extends KubernetesDependentResource<
   public Set<ResourceID> toPrimaryResourceIDs(ConfigMap configMap) {
     Set<ResourceID> result = new LinkedHashSet<>();
     if (null != configMap.getMetadata().getLabels() && !configMap.getMetadata().getLabels().isEmpty()) {
-      String connector = configMap.getMetadata().getLabels().get("connector");
+      String connector = configMap.getMetadata().getLabels().get(LabelMaker.LABEL_CONNECTOR);
       result.add(
           new ResourceID(connector, configMap.getMetadata().getNamespace())
       );
@@ -39,17 +41,17 @@ public class TaskConfigMapDependentResource extends KubernetesDependentResource<
   protected void onUpdated(ResourceID primaryResourceId, ConfigMap updated, ConfigMap actual) {
     super.onUpdated(primaryResourceId, updated, actual);
 
-    Map<String, String> labels = new LinkedHashMap<>();
-    labels.put("type", "task");
-    labels.put("connector", primaryResourceId.getName());
+    Map<String, String> labels = taskLabels(primaryResourceId);
+    log.debug("onUpdated({}) - Searching for pods with labels: {}", primaryResourceId, labels);
 
     if (primaryResourceId.getNamespace().isPresent()) {
+
       PodList podList =
           getKubernetesClient().pods().inNamespace(primaryResourceId.getNamespace().get())
               .withLabels(labels)
               .list();
       for (Pod pod : podList.getItems()) {
-        log.info("onUpdated() - Restarting pod {}", pod.getMetadata().getName());
+        log.info("onUpdated({}) - Restarting pod {}", primaryResourceId, pod.getMetadata().getName());
         getKubernetesClient().pods().inNamespace(primaryResourceId.getNamespace().get()).delete(pod);
       }
     } else {
@@ -58,7 +60,7 @@ public class TaskConfigMapDependentResource extends KubernetesDependentResource<
               .withLabels(labels)
               .list();
       for (Pod pod : podList.getItems()) {
-        log.info("onUpdated() - Restarting pod {}", pod.getMetadata().getName());
+        log.info("onUpdated({}) - Restarting pod {}", primaryResourceId, pod.getMetadata().getName());
         getKubernetesClient().pods().delete(pod);
       }
     }

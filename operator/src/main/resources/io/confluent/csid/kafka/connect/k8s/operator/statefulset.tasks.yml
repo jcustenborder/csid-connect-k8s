@@ -16,8 +16,10 @@ spec:
           image: template
           volumeMounts: []
           command:
-            - /usr/bin/connector-runner
+            - /usr/bin/task-runner
           args:
+            - "--task"
+            - "/config/task"
             - "--connector"
             - "/config/connector"
             - "--worker"

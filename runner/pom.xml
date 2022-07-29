@@ -186,6 +186,10 @@
                                 <mode>755
                                 </mode> <!-- Read/write for owner, read-only for group/other -->
                             </permission>
+                            <permission>
+                                <file>/usr/bin/stop-java</file>
+                                <mode>755</mode> <!-- Read/write for owner, read-only for group/other -->
+                            </permission>
                         </permissions>
                     </extraDirectories>
                 </configuration>

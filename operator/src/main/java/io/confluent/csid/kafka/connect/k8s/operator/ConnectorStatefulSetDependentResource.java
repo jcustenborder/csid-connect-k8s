@@ -1,10 +1,14 @@
 package io.confluent.csid.kafka.connect.k8s.operator;
 
 import io.confluent.csid.kafka.connect.k8s.KafkaConnector;
-import io.confluent.csid.kafka.connect.k8s.common.Utils;
+import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
+import io.fabric8.kubernetes.api.model.ExecActionBuilder;
 import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
+import io.fabric8.kubernetes.api.model.LifecycleBuilder;
+import io.fabric8.kubernetes.api.model.LifecycleHandlerBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
@@ -16,7 +20,13 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDep
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@KubernetesDependent(labelSelector = "type=connector")
+import java.util.List;
+
+import static io.confluent.csid.kafka.connect.k8s.common.Utils.ifPresent;
+import static io.confluent.csid.kafka.connect.k8s.operator.LabelMaker.addConnectorLabels;
+import static io.javaoperatorsdk.operator.ReconcilerUtils.loadYaml;
+
+@KubernetesDependent(labelSelector = LabelMaker.SELECTOR_CONNECTOR)
 public class ConnectorStatefulSetDependentResource extends CRUDKubernetesDependentResource<StatefulSet, KafkaConnector> {
   private static final Logger log = LoggerFactory.getLogger(ConnectorStatefulSetDependentResource.class);
 
@@ -30,62 +40,34 @@ public class ConnectorStatefulSetDependentResource extends CRUDKubernetesDepende
     KafkaConnectorState state = ImmutableKafkaConnectorState.builder()
         .kafkaConnector(primary)
         .build();
-    ContainerBuilder containerBuilder = new ContainerBuilder()
-        .withName("connector")
-        .withImage(primary.getSpec().getConnectorImage())
-        .withVolumeMounts(
-            state.connectorConfigMapVolumeMount(),
-            state.workerConfigMapVolumeMount()
-        )
-        .withCommand("/usr/bin/connector-runner")
-        .withArgs(
-            "--connector",
-            "/config/connector",
-            "--worker",
-            "/config/worker"
-        );
 
-    Utils.ifPresent(
-        primary.getSpec().getImagePullPolicy(),
-        containerBuilder::withImagePullPolicy
-    );
+    StatefulSet statefulSet = loadYaml(StatefulSet.class, this.getClass(), "statefulset.connector.yml");
+    //TODO: this needs to be a config setting.
+    statefulSet.getSpec().getTemplate().getSpec().setServiceAccountName("connector-operator");
+    statefulSet.setMetadata(state.connectorStatefulSet().build());
+    addConnectorLabels(statefulSet.getSpec().getSelector().getMatchLabels(), primary);
+    addConnectorLabels(statefulSet.getSpec().getTemplate().getMetadata().getLabels(), primary);
 
-    PodSpecBuilder podSpecBuilder = new PodSpecBuilder()
-        .withVolumes(
+    statefulSet.getSpec().getTemplate().getSpec().setVolumes(
+        List.of(
             state.connectorConfigMapVolume(),
             state.workerConfigMapVolume()
         )
-        .withServiceAccountName("connector-operator") //This needs to be configurable
-        .withContainers(containerBuilder.build());
+    );
 
-    Utils.ifPresent(primary.getSpec().getImagePullSecrets(), podSpecBuilder::withImagePullSecrets);
+    PodSpec podSpec = statefulSet.getSpec().getTemplate().getSpec();
+    ifPresent(primary.getSpec().getImagePullSecrets(), podSpec::setImagePullSecrets);
 
-    return new StatefulSetBuilder()
-        .withMetadata(
-            state.connectorStatefulSet().addToLabels("type", "connector").build()
-        ).withSpec(
-            new StatefulSetSpecBuilder()
-                .withServiceName(state.connectorStatefulSet().getName())
-                .withSelector(
-                    new LabelSelectorBuilder()
-                        .withMatchLabels(state.connectorLabels())
-                        .build()
-                )
-                .withReplicas(1)
-                .withTemplate(
-                    new PodTemplateSpecBuilder()
-                        .withMetadata(
-                            new ObjectMetaBuilder()
-                                .withLabels(state.connectorLabels())
-                                .build()
-                        )
-                        .withSpec(
-                            podSpecBuilder.build()
-                        )
-                        .build()
-                )
-                .build()
+    Container container = statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0);
+    container.setImage(primary.getSpec().getConnectorImage());
+    ifPresent(primary.getSpec().getImagePullPolicy(), container::setImagePullPolicy);
+    container.setVolumeMounts(
+        List.of(
+            state.connectorConfigMapVolumeMount(),
+            state.workerConfigMapVolumeMount()
         )
-        .build();
+    );
+
+    return statefulSet;
   }
 }

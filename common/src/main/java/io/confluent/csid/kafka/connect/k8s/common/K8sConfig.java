@@ -3,9 +3,11 @@ package io.confluent.csid.kafka.connect.k8s.common;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class K8sConfig extends AbstractConfig {
 
@@ -32,5 +34,14 @@ public class K8sConfig extends AbstractConfig {
         .define(CONNECTOR_NAMESPACE_CONF, ConfigDef.Type.STRING, ConfigDef.Importance.HIGH, "")
         .define(CONNECTOR_NAME_CONF, ConfigDef.Type.STRING, ConfigDef.Importance.HIGH, "")
         .define(PLUGIN_DOWNLOAD_CONF, ConfigDef.Type.LIST, new ArrayList<>(), ConfigDef.Importance.HIGH, "");
+  }
+
+  public Map<String, String> labels() {
+    final String prefix = "labels.";
+    return originalsStrings()
+        .entrySet()
+        .stream().filter(e->e.getKey().startsWith(prefix))
+        .map(e-> new AbstractMap.SimpleEntry<>(e.getKey().substring(prefix.length()), e.getValue()))
+        .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
   }
 }

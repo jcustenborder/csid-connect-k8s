@@ -26,4 +26,4 @@ spec:
     value.converter: "org.apache.kafka.connect.json.JsonConverter"
     max.interval: "2"
     iterations: "100000000"
-    tasks.max: "1"
+    tasks.max: "5"

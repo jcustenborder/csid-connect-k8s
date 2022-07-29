@@ -26,9 +26,27 @@ public class KafkaConnectorSpec {
 
   private List<String> downloadPlugins = new ArrayList<>();
 
-  @JsonProperty(required = true)
+
   private LocalObjectReference workerConfigSecret;
 
+  private int connectorMemoryMB = 256;
+  private int taskMemoryMB = 256;
+
+  public int getConnectorMemoryMB() {
+    return connectorMemoryMB;
+  }
+
+  public void setConnectorMemoryMB(int connectorMemoryMB) {
+    this.connectorMemoryMB = connectorMemoryMB;
+  }
+
+  public int getTaskMemoryMB() {
+    return taskMemoryMB;
+  }
+
+  public void setTaskMemoryMB(int taskMemoryMB) {
+    this.taskMemoryMB = taskMemoryMB;
+  }
 
   public LocalObjectReference getWorkerConfigSecret() {
     return workerConfigSecret;

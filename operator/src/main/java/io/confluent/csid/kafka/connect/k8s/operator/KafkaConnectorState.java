@@ -3,7 +3,6 @@ package io.confluent.csid.kafka.connect.k8s.operator;
 import io.confluent.csid.kafka.connect.k8s.KafkaConnector;
 import io.fabric8.kubernetes.api.model.ConfigMapVolumeSourceBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import io.fabric8.kubernetes.api.model.SecretVolumeSource;
 import io.fabric8.kubernetes.api.model.SecretVolumeSourceBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
@@ -31,18 +30,12 @@ public interface KafkaConnectorState {
 
   @Value.Derived
   default Map<String, String> connectorLabels() {
-    Map<String, String> labels = new LinkedHashMap<>();
-    labels.put("connector", name());
-    labels.put("type", "connector");
-    return labels;
+    return LabelMaker.connectorLabels(kafkaConnector());
   }
 
   @Value.Derived
   default Map<String, String> taskLabels() {
-    Map<String, String> labels = new LinkedHashMap<>();
-    labels.put("connector", name());
-    labels.put("type", "task");
-    return labels;
+    return LabelMaker.taskLabels(kafkaConnector());
   }
 
 
@@ -148,6 +141,7 @@ public interface KafkaConnectorState {
         .withMountPath("/config/task")
         .build();
   }
+
   @Value.Derived
   default ObjectMetaBuilder taskStatefulSet() {
     return taskConfigMap();
