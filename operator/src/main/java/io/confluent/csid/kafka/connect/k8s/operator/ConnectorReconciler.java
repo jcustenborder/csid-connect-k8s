@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
         @Dependent(type = TaskStatefulSetDependentResource.class, name = "task-statefulset", dependsOn = {"task-configmap"})
     }
 )
-public class ConnectorReconciler implements Reconciler<KafkaConnector>, Cleaner<KafkaConnector> {
+public class ConnectorReconciler implements Reconciler<KafkaConnector> {
   private static final Logger log = LoggerFactory.getLogger(ConnectorReconciler.class);
 
   @Override
@@ -37,23 +37,5 @@ public class ConnectorReconciler implements Reconciler<KafkaConnector>, Cleaner<
     Set<StatefulSet> statefulSets = context.getSecondaryResources(StatefulSet.class);
 
     return UpdateControl.noUpdate();
-  }
-
-
-  @Override
-  public DeleteControl cleanup(KafkaConnector connector, Context<KafkaConnector> context) {
-    Set<ConfigMap> configMaps = context.getSecondaryResources(ConfigMap.class);
-
-    List<ConfigMap> toRemove =
-        configMaps.stream()
-            .filter(c -> connector.getMetadata().getName().equals(c.getMetadata().getLabels().get(LabelMaker.LABEL_CONNECTOR)))
-            .filter(c -> LabelMaker.VALUE_TASK.equals(c.getMetadata().getLabels().get(LabelMaker.LABEL_TYPE)))
-            .collect(Collectors.toList());
-
-    if(!toRemove.isEmpty()) {
-
-    }
-
-    return DeleteControl.defaultDelete();
   }
 }
