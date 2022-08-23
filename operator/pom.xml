@@ -148,61 +148,14 @@
         </dependency>
     </dependencies>
     <build>
+<!--        <resources>-->
+<!--            <resource>-->
+<!--                <directory>${project.basedir}/src/helm</directory>-->
+<!--                <filtering>true</filtering>-->
+<!--            </resource>-->
+<!--        </resources>-->
         <plugins>
-            <plugin>
-                <groupId>com.google.cloud.tools</groupId>
-                <artifactId>jib-maven-plugin</artifactId>
-                <version>3.2.1</version>
-                <configuration>
-                    <from>
-                        <image>confluentinc/cp-kafka-connect:7.1.3</image>
-                        <!--                        <image>jcustenborder/cp-kafka-connect:7.1.3-1</image>-->
-                    </from>
-                    <containerizingMode>packaged</containerizingMode>
-                    <container>
-                        <appRoot>/usr/share/java/connect-k8s</appRoot>
-                        <environment>
-                            <!--                            Move this to the entrypoint script.-->
-                            <CLASSPATH>
-                                /usr/share/java/connect-k8s/classpath/*:/usr/share/java/connect-k8s/libs/*
-                            </CLASSPATH>
-                        </environment>
-                    </container>
-                    <extraDirectories>
-                        <paths>
-                            <path>
-                                <from>src/main/scripts</from>
-                                <into>/usr/bin</into>
-                            </path>
-                        </paths>
-                        <permissions>
-                            <permission>
-                                <file>/usr/bin/operator</file>
-                                <mode>755</mode> <!-- Read/write for owner, read-only for group/other -->
-                            </permission>
-                        </permissions>
-                    </extraDirectories>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>runner</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <configuration>
-                            <to>
-                                <image>
-                                    jcustenborder/${project.artifactId}:${project.version}
-                                </image>
-                            </to>
-                            <container>
-                                <entrypoint>/usr/bin/operator</entrypoint>
-                            </container>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -211,7 +164,141 @@
                     <target>9</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.5</version>
+                <executions>
+                    <execution>
+                        <id>process-helm-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <targetPath>${basedir}/target/helm-filtered</targetPath>
+                                    <directory>${project.basedir}/src/helm</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                                <resource>
+                                    <targetPath>${basedir}/target/helm-filtered/templates</targetPath>
+                                    <directory>../model/target/classes/META-INF/fabric8</directory>
+                                    <filtering>false</filtering>
+                                    <excludes>
+                                        <exclude>*v1beta1.yml</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.kokuwa.maven</groupId>
+                <artifactId>helm-maven-plugin</artifactId>
+                <version>6.3.0</version>
+                <configuration>
+                    <chartDirectory>${basedir}/target/helm-filtered</chartDirectory>
+                    <useLocalHelmBinary>true</useLocalHelmBinary>
+                    <autoDetectLocalHelmBinary>false</autoDetectLocalHelmBinary>
+                    <helmExecutableDirectory>/usr/local/bin</helmExecutableDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>helm-package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <configuration>
+                            <chartVersion>${project.version}</chartVersion>
+                            <appVersion>${project.version}</appVersion>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>helm-template</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>template</goal>
+                        </goals>
+                        <configuration>
+                            <skipTemplate>false</skipTemplate>
+                            <outputDirectory>${basedir}/target/helm-rendered</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <configuration>
+                            <from>
+                                <image>confluentinc/cp-kafka-connect:7.1.3</image>
+                                <!--                        <image>jcustenborder/cp-kafka-connect:7.1.3-1</image>-->
+                            </from>
+                            <containerizingMode>packaged</containerizingMode>
+                            <container>
+                                <appRoot>/usr/share/java/connect-k8s</appRoot>
+                                <environment>
+                                    <!--                            Move this to the entrypoint script.-->
+                                    <CLASSPATH>
+                                        /usr/share/java/connect-k8s/classpath/*:/usr/share/java/connect-k8s/libs/*
+                                    </CLASSPATH>
+                                </environment>
+                            </container>
+                            <extraDirectories>
+                                <paths>
+                                    <path>
+                                        <from>src/main/scripts</from>
+                                        <into>/usr/bin</into>
+                                    </path>
+                                </paths>
+                                <permissions>
+                                    <permission>
+                                        <file>/usr/bin/operator</file>
+                                        <mode>755
+                                        </mode> <!-- Read/write for owner, read-only for group/other -->
+                                    </permission>
+                                </permissions>
+                            </extraDirectories>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>runner</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <to>
+                                        <image>
+                                            jcustenborder/${project.artifactId}:${project.version}
+                                        </image>
+                                    </to>
+                                    <container>
+                                        <entrypoint>/usr/bin/operator</entrypoint>
+                                    </container>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

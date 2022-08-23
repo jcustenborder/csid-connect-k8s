@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "connect-k8s.serviceAccountName" . }}
+data:
+  logging.properties: |
+    log4j.appender.stdout.layout.ConversionPattern=[%d] %p %m (%c)%n
+    log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+    log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+    log4j.logger.io.confluent.csid.kafka.connect.k8s.common=TRACE
+    log4j.logger.org.reflections=ERROR
+    log4j.rootLogger=INFO, stdout

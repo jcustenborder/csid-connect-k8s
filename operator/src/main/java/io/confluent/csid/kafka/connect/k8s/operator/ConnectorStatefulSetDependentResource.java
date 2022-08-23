@@ -3,6 +3,7 @@ package io.confluent.csid.kafka.connect.k8s.operator;
 import io.confluent.csid.kafka.connect.k8s.KafkaConnector;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.PodSpec;
+import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource;
@@ -49,7 +50,12 @@ public class ConnectorStatefulSetDependentResource extends CRUDKubernetesDepende
     ifPresent(primary.getSpec().getImagePullSecrets(), podSpec::setImagePullSecrets);
 
     Container container = statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0);
-    container.setImage(primary.getSpec().getConnectorImage());
+
+    ResourceRequirements resourceRequirements = primary.getSpec().getConnector().resourceRequirements();
+    if (null != resourceRequirements) {
+      container.setResources(resourceRequirements);
+    }
+
     ifPresent(primary.getSpec().getImagePullPolicy(), container::setImagePullPolicy);
     container.setVolumeMounts(
         List.of(

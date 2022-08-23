@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory;
         @Dependent(type = ConnectorConfigMapDependentResource.class, name = "connector-configmap"),
         @Dependent(type = ConnectorStatefulSetDependentResource.class, name = "connector-statefulset", dependsOn = {"connector-configmap"}),
         @Dependent(type = TaskConfigMapDependentResource.class, name = "task-configmap", dependsOn = {"connector-statefulset"}),
-        @Dependent(type = TaskStatefulSetDependentResource.class, name = "task-statefulset", dependsOn = {"task-configmap"})
+        @Dependent(type = TaskStatefulSetDependentResource.class, name = "task-statefulset", dependsOn = {"task-configmap"})/*,
+        @Dependent(type = TaskServiceDependantResource.class, name = "task-service", dependsOn = {"task-configmap"}) */
     }
 )
 public class ConnectorReconciler implements Reconciler<KafkaConnector> {
@@ -23,6 +24,9 @@ public class ConnectorReconciler implements Reconciler<KafkaConnector> {
   @Override
   public UpdateControl<KafkaConnector> reconcile(KafkaConnector connector, Context<KafkaConnector> context) throws Exception {
     log.info("reconcile() - connector = {}", connector);
+
+
+
     return UpdateControl.noUpdate();
   }
 }

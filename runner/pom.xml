@@ -147,73 +147,83 @@
             <artifactId>kubernetes-client</artifactId>
         </dependency>
     </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.google.cloud.tools</groupId>
-                <artifactId>jib-maven-plugin</artifactId>
-                <version>3.2.1</version>
-                <configuration>
-                    <from>
-                        <image>confluentinc/cp-kafka-connect:7.1.3</image>
-<!--                        <image>jcustenborder/cp-kafka-connect:7.1.3-1</image>-->
-                    </from>
-                    <containerizingMode>packaged</containerizingMode>
-                    <container>
-                        <appRoot>/usr/share/java/connect-k8s</appRoot>
-                        <environment>
-<!--                            Move this to the entrypoint script.-->
-                            <CLASSPATH>
-                                /usr/share/java/connect-k8s/classpath/*:/usr/share/java/connect-k8s/libs/*
-                            </CLASSPATH>
-                        </environment>
-                    </container>
-                    <extraDirectories>
-                        <paths>
-                            <path>
-                                <from>src/main/scripts</from>
-                                <into>/usr/bin</into>
-                            </path>
-                        </paths>
-                        <permissions>
-                            <permission>
-                                <file>/usr/bin/connector-runner</file>
-                                <mode>755
-                                </mode> <!-- Read/write for owner, read-only for group/other -->
-                            </permission>
-                            <permission>
-                                <file>/usr/bin/task-runner</file>
-                                <mode>755
-                                </mode> <!-- Read/write for owner, read-only for group/other -->
-                            </permission>
-                            <permission>
-                                <file>/usr/bin/stop-java</file>
-                                <mode>755</mode> <!-- Read/write for owner, read-only for group/other -->
-                            </permission>
-                        </permissions>
-                    </extraDirectories>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>runner</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <configuration>
-                            <to>
-                                <image>
-                                    jcustenborder/connect-k8s-runner:${project.version}
-                                </image>
-                            </to>
-                            <container>
-                                <entrypoint>/usr/bin/runner</entrypoint>
-                            </container>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
 
-        </plugins>
-    </build>
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <configuration>
+                            <from>
+                                <image>confluentinc/cp-kafka-connect:7.1.3</image>
+                                <!--                        <image>jcustenborder/cp-kafka-connect:7.1.3-1</image>-->
+                            </from>
+                            <containerizingMode>packaged</containerizingMode>
+                            <container>
+                                <appRoot>/usr/share/java/connect-k8s</appRoot>
+                                <environment>
+                                    <!--                            Move this to the entrypoint script.-->
+                                    <CLASSPATH>
+                                        /usr/share/java/connect-k8s/classpath/*:/usr/share/java/connect-k8s/libs/*
+                                    </CLASSPATH>
+                                </environment>
+                            </container>
+                            <extraDirectories>
+                                <paths>
+                                    <path>
+                                        <from>src/main/scripts</from>
+                                        <into>/usr/bin</into>
+                                    </path>
+                                </paths>
+                                <permissions>
+                                    <permission>
+                                        <file>/usr/bin/connector-runner</file>
+                                        <mode>755
+                                        </mode> <!-- Read/write for owner, read-only for group/other -->
+                                    </permission>
+                                    <permission>
+                                        <file>/usr/bin/task-runner</file>
+                                        <mode>755
+                                        </mode> <!-- Read/write for owner, read-only for group/other -->
+                                    </permission>
+                                    <permission>
+                                        <file>/usr/bin/stop-java</file>
+                                        <mode>755
+                                        </mode> <!-- Read/write for owner, read-only for group/other -->
+                                    </permission>
+                                </permissions>
+                            </extraDirectories>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>runner</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <to>
+                                        <image>
+                                            jcustenborder/connect-k8s-runner:${project.version}
+                                        </image>
+                                    </to>
+                                    <container>
+                                        <entrypoint>/usr/bin/runner</entrypoint>
+                                    </container>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

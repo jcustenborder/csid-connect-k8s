@@ -142,5 +142,11 @@
             <groupId>io.javaoperatorsdk</groupId>
             <artifactId>operator-framework</artifactId>
         </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

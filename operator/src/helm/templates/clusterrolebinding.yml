@@ -1,0 +1,14 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: operator-admin
+  namespace: kafka-connect-poc
+subjects:
+  - kind: ServiceAccount
+    name: connector-operator
+    namespace: kafka-connect-poc
+roleRef:
+  kind: ClusterRole
+  name: connector-operator
+  apiGroup: ""

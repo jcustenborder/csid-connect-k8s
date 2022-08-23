@@ -4,8 +4,7 @@ import io.confluent.csid.kafka.connect.k8s.KafkaConnector;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.PodSpec;
-import io.fabric8.kubernetes.api.model.QuantityBuilder;
-import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
+import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource;
@@ -14,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -62,26 +60,12 @@ public class TaskStatefulSetDependentResource extends CRUDKubernetesDependentRes
 
     Container container = statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0);
 
-    container.setResources(
-        new ResourceRequirementsBuilder()
-            .withRequests(
-                Map.of("memory", new QuantityBuilder()
-                    .withAmount(Integer.toString(primary.getSpec().getTaskMemoryMB()))
-                    .withFormat("Mi")
-                    .build()
-                )
-            )
-//            .withLimits(
-//                Map.of("memory", new QuantityBuilder()
-//                    .withAmount(Integer.toString(primary.getSpec().getTaskMemoryMB()))
-//                    .withFormat("Mi")
-//                    .build()
-//                )
-//            )
-            .build()
-    );
+    ResourceRequirements resourceRequirements = primary.getSpec().getTask().resourceRequirements();
+    if (null != resourceRequirements) {
+      container.setResources(resourceRequirements);
+    }
 
-    container.setImage(primary.getSpec().getConnectorImage());
+//    container.setImage(primary.getSpec().getConnectorImage());
     ifPresent(primary.getSpec().getImagePullPolicy(), container::setImagePullPolicy);
     container.setVolumeMounts(
         List.of(

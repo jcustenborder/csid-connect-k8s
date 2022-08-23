@@ -7,7 +7,7 @@ import io.fabric8.kubernetes.model.annotation.Version;
 
 @Group("io.confluent.csid")
 @Version("v1")
-public class KafkaConnector extends CustomResource<KafkaConnectorSpec, KafkaConnectorStatus> implements Namespaced {
+public class KafkaConnector extends CustomResource<ConnectorSpec, KafkaConnectorStatus> implements Namespaced {
 
 
 

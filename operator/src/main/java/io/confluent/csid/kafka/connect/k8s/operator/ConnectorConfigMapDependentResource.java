@@ -71,7 +71,7 @@ public class ConnectorConfigMapDependentResource extends CRUDKubernetesDependent
 
     SortedProperties loggingProperties = new SortedProperties();
     loggingProperties.putAll(
-        "log4j.rootLogger", String.format("%s, stdout", primary.getSpec().getLoggingConfig().getLevel()),
+        "log4j.rootLogger", String.format("%s, stdout", primary.getSpec().getLoggingConfig().getDefaultLoggerLevel()),
         "log4j.appender.stdout", "org.apache.log4j.ConsoleAppender",
         "log4j.appender.stdout.layout", "org.apache.log4j.PatternLayout",
         "log4j.appender.stdout.layout.ConversionPattern", "[%d] %p %m (%c)%n",
