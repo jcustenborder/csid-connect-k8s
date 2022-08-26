@@ -34,10 +34,16 @@ public class ConnectorSpec {
 
   private List<LocalObjectReference> imagePullSecrets = new ArrayList<>();
 
+  @JsonProperty("loggingConfig")
+  @JsonPropertyDescription("Logging configuration for the containers.")
   private LoggingConfig loggingConfig = new LoggingConfig();
 
+  @JsonProperty("downloadPlugins")
+  @JsonPropertyDescription("List of plugins to download from the Confluent hub. ex 'confluentinc/kafka-connect-datagen:0.5.3'")
   private List<String> downloadPlugins = new ArrayList<>();
 
+  @JsonProperty("workerConfigSecret")
+  @JsonPropertyDescription("Secret in the local namespace that holds the worker.properties configuration file.")
   private LocalObjectReference workerConfigSecret;
 
   private String imagePullPolicy;

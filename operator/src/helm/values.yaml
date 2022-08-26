@@ -4,7 +4,9 @@
 
 image:
   repository: jcustenborder/connect-k8s-operator
-  pullPolicy: IfNotPresent
+#  pullPolicy: IfNotPresent
+  pullPolicy: Always #TODO fix this
+
   # Overrides the image tag whose default is the chart appVersion.
   tag: "${project.version}"
 

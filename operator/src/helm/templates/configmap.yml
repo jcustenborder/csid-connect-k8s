@@ -11,3 +11,5 @@ data:
     log4j.logger.io.confluent.csid.kafka.connect.k8s.common=TRACE
     log4j.logger.org.reflections=ERROR
     log4j.rootLogger=INFO, stdout
+  operator.properties: |
+    operator.service.account.name: {{ include "connect-k8s.serviceAccountName" . }}

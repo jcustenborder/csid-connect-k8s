@@ -25,6 +25,10 @@ spec:
       serviceAccountName: {{ include "connect-k8s.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "connect-k8s.serviceAccountName" . }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -33,6 +37,12 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /config/operator
+              name: config
+          env:
+            - name: KAFKA_OPTS
+              value: "-Doperator.service.account.name={{ include "connect-k8s.serviceAccountName" . }}"
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

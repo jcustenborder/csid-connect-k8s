@@ -6,8 +6,8 @@ metadata:
   namespace: kafka-connect-poc
 subjects:
   - kind: ServiceAccount
-    name: connector-operator
-    namespace: kafka-connect-poc
+    name: {{ include "connect-k8s.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace}}
 roleRef:
   kind: ClusterRole
   name: connector-operator

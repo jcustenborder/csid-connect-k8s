@@ -9,11 +9,11 @@ metadata:
     cost-center: boring
 spec:
   connector:
-    image: jcustenborder/connect-k8s-runner:1.0.3-SNAPSHOT
+    image: jcustenborder/connect-k8s-runner:0.1-SNAPSHOT
     requests:
       memory: "512M"
   task:
-    image: jcustenborder/connect-k8s-runner:1.0.3-SNAPSHOT
+    image: jcustenborder/connect-k8s-runner:0.1-SNAPSHOT
   imagePullPolicy: Always
   workerConfigSecret:
     name: worker-config
@@ -30,4 +30,4 @@ spec:
     value.converter: "org.apache.kafka.connect.json.JsonConverter"
     max.interval: "2"
     iterations: "100000000"
-    tasks.max: "1"
+    tasks.max: "3"

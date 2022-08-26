@@ -42,7 +42,7 @@ public class TaskStatefulSetDependentResource extends CRUDKubernetesDependentRes
     );
 
     StatefulSet statefulSet = loadYaml(StatefulSet.class, this.getClass(), "statefulset.tasks.yml");
-    //TODO: this needs to be a config setting.
+
     statefulSet.setMetadata(state.taskStatefulSet().build());
     addTaskLabels(statefulSet.getSpec().getSelector().getMatchLabels(), primary);
     addTaskLabels(statefulSet.getSpec().getTemplate().getMetadata().getLabels(), primary);
@@ -59,6 +59,7 @@ public class TaskStatefulSetDependentResource extends CRUDKubernetesDependentRes
     ifPresent(primary.getSpec().getImagePullSecrets(), podSpec::setImagePullSecrets);
 
     Container container = statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0);
+    container.setImage(primary.getSpec().getTask().getImage());
 
     ResourceRequirements resourceRequirements = primary.getSpec().getTask().resourceRequirements();
     if (null != resourceRequirements) {

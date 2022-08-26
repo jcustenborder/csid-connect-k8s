@@ -34,7 +34,9 @@ public class ConnectorStatefulSetDependentResource extends CRUDKubernetesDepende
 
     StatefulSet statefulSet = loadYaml(StatefulSet.class, this.getClass(), "statefulset.connector.yml");
     //TODO: this needs to be a config setting.
-    statefulSet.getSpec().getTemplate().getSpec().setServiceAccountName("connector-operator");
+    statefulSet.getSpec().getTemplate().getSpec().setServiceAccountName(Constants.getServiceAccountName());
+    statefulSet.getSpec().getTemplate().getSpec().setServiceAccount(Constants.getServiceAccountName());
+
     statefulSet.setMetadata(state.connectorStatefulSet().build());
     addConnectorLabels(statefulSet.getSpec().getSelector().getMatchLabels(), primary);
     addConnectorLabels(statefulSet.getSpec().getTemplate().getMetadata().getLabels(), primary);
@@ -50,6 +52,8 @@ public class ConnectorStatefulSetDependentResource extends CRUDKubernetesDepende
     ifPresent(primary.getSpec().getImagePullSecrets(), podSpec::setImagePullSecrets);
 
     Container container = statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0);
+    container.setImage(primary.getSpec().getConnector().getImage());
+
 
     ResourceRequirements resourceRequirements = primary.getSpec().getConnector().resourceRequirements();
     if (null != resourceRequirements) {
