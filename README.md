@@ -50,6 +50,8 @@ Build the docker containers. You need to have permission to push the containers.
 mvn clean package -P docker
 ```
 
+# Install the operator.
+
 ```bash
 helm install -n kafka-connect-poc connect-operator ./operator/target/helm/repo/connect-k8s-0.1-SNAPSHOT.tgz
 ```
