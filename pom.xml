@@ -247,25 +247,25 @@
     </dependencies>
     <build>
         <plugins>
-<!--            <plugin>-->
-<!--                <groupId>com.mycila</groupId>-->
-<!--                <artifactId>license-maven-plugin</artifactId>-->
-<!--                <version>3.0</version>-->
-<!--                <configuration>-->
-<!--                    <header>${license.path}</header>-->
-<!--                    <properties>-->
-<!--                        <owner>Confluent, Inc</owner>-->
-<!--                    </properties>-->
-<!--                    <excludes>-->
-<!--                        <exclude>**/README</exclude>-->
-<!--                        <exclude>LICENSE</exclude>-->
-<!--                        <exclude>src/test/resources/**</exclude>-->
-<!--                        <exclude>src/main/resources/**</exclude>-->
-<!--                        <exclude>src/assembly/**</exclude>-->
-<!--                        <exclude>docs/</exclude>-->
-<!--                        <exclude>docs_src/</exclude>-->
-<!--                    </excludes>-->
-<!--                </configuration>-->
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <header>${license.path}</header>
+                    <properties>
+                        <owner>Confluent, Inc</owner>
+                    </properties>
+                    <excludes>
+                        <exclude>**/README</exclude>
+                        <exclude>LICENSE</exclude>
+                        <exclude>src/test/resources/**</exclude>
+                        <exclude>src/main/resources/**</exclude>
+                        <exclude>src/assembly/**</exclude>
+                        <exclude>docs/</exclude>
+                        <exclude>docs_src/</exclude>
+                    </excludes>
+                </configuration>
 <!--                <executions>-->
 <!--                    <execution>-->
 <!--                        <id>check-source</id>-->
@@ -275,7 +275,7 @@
 <!--                        </goals>-->
 <!--                    </execution>-->
 <!--                </executions>-->
-<!--            </plugin>-->
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -312,38 +312,38 @@
                 </executions>
             </plugin>
 
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-checkstyle-plugin</artifactId>-->
-<!--                <version>${maven.checkstyle.version}</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>validate</id>-->
-<!--                        <phase>validate</phase>-->
-<!--                        <configuration>-->
-<!--                            <configLocation>checkstyle.xml</configLocation>-->
-<!--                            <encoding>UTF-8</encoding>-->
-<!--                            <consoleOutput>true</consoleOutput>-->
-<!--                            <failsOnError>true</failsOnError>-->
-<!--                            <includeResources>false</includeResources>-->
-<!--                            <includeTestResources>false</includeTestResources>-->
-<!--                            <sourceDirectories>-->
-<!--                                <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>-->
-<!--                            </sourceDirectories>-->
-<!--                        </configuration>-->
-<!--                        <goals>-->
-<!--                            <goal>check</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--                <dependencies>-->
-<!--                    <dependency>-->
-<!--                        <groupId>com.github.jcustenborder.kafka.connect</groupId>-->
-<!--                        <artifactId>kafka-connect-style-checkstyle</artifactId>-->
-<!--                        <version>${kafka-connect-style.version}</version>-->
-<!--                    </dependency>-->
-<!--                </dependencies>-->
-<!--            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${maven.checkstyle.version}</version>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <configuration>
+                            <configLocation>checkstyle.xml</configLocation>
+                            <encoding>UTF-8</encoding>
+                            <consoleOutput>true</consoleOutput>
+                            <failsOnError>true</failsOnError>
+                            <includeResources>false</includeResources>
+                            <includeTestResources>false</includeTestResources>
+                            <sourceDirectories>
+                                <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                            </sourceDirectories>
+                        </configuration>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.github.jcustenborder.kafka.connect</groupId>
+                        <artifactId>kafka-connect-style-checkstyle</artifactId>
+                        <version>${kafka-connect-style.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
 
