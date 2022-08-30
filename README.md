@@ -38,6 +38,18 @@ is limited to, it will be restarted.
 
 # Installation
 
+Build the CRDs.
+
+```bash
+mvn clean package
+```
+
+Build the docker containers. You need to have permission to push the containers.
+
+```bash
+mvn clean package -P docker
+```
+
 ```bash
 helm install -n kafka-connect-poc connect-operator ./operator/target/helm/repo/connect-k8s-0.1-SNAPSHOT.tgz
 ```
@@ -181,7 +193,8 @@ Above you will see a pod for the operator, a pod for the connector, and 3 pods f
 
 ### IllegalStateException thrown while waiting for tasks config
 
-You might see an exception that looks something like this. There is currently an issue with the operator SDK that is causing this. It can be ignored and will be resolved soon.
+You might see an exception that looks something like this. There is currently an issue with the operator SDK that is causing this. It can be ignored and will be resolved soon. Specifically this [issue](https://github.com/java-operator-sdk/java-operator-sdk/issues/1175) needs to
+be resolved
 
 ```text
 [2022-08-26 21:21:17,897] ERROR Error during event processing ExecutionScope{ resource id: ResourceID{name='test', namespace='kafka-connect-poc'}, version: 17314} failed. (io.javaoperatorsdk.operator.processing.event.ReconciliationDispatcher)
