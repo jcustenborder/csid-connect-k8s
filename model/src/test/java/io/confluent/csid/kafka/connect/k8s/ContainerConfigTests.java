@@ -192,7 +192,8 @@ public class ContainerConfigTests {
 
     ResourceRequirements requirements = this.config.resourceRequirements();
     assertNotNull(requirements);
-    assertNull(requirements.getLimits());
+    assertNotNull(requirements.getLimits());
+    assertTrue(requirements.getLimits().isEmpty());
     assertLimit(requirements.getRequests(), "memory", 512, "M");
   }
 
@@ -204,7 +205,8 @@ public class ContainerConfigTests {
 
     ResourceRequirements requirements = this.config.resourceRequirements();
     assertNotNull(requirements);
-    assertNull(requirements.getRequests());
+    assertNotNull(requirements.getRequests());
+    assertTrue(requirements.getRequests().isEmpty());
     assertLimit(requirements.getLimits(), "memory", 512, "M");
   }
 
