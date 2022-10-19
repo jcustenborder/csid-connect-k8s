@@ -53,7 +53,7 @@ mvn clean package -P docker
 # Install the operator.
 
 ```bash
-helm install -n kafka-connect-poc connect-operator ./operator/target/helm/repo/connect-k8s-0.1-SNAPSHOT.tgz
+helm install -n kafka-connect-poc connect-operator ./operator/target/helm/repo/connect-k8s-0.2-SNAPSHOT.tgz
 ```
 
 Create a worker configuration for connectors and tasks to use. The easiest way to do this is go to Confluent Cloud 
