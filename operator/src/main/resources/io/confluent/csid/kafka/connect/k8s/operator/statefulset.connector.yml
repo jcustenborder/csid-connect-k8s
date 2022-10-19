@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: template
+  namespace: template
+  labels: {}
+spec:
+  template:
+    metadata:
+      labels: {}
+    spec:
+      volumes: []
+      containers:
+        - name: connector
+          image: template
+          volumeMounts: []
+          command:
+            - /usr/bin/connector-runner
+          args:
+            - "--connector"
+            - "/config/connector"
+            - "--worker"
+            - "/config/worker"
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /usr/bin/stop-java
+  replicas: 1
+  selector:
+    matchLabels: {}
+  serviceName: template
+
+
